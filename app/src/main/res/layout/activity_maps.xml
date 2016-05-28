@@ -1,6 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:layout_width="fill_parent" android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_alignParentBottom="true">
 
     <EditText
         android:id="@+id/editText"
@@ -8,18 +9,36 @@
         android:layout_height="wrap_content"
         android:text="300"
         android:inputType="number" />
-
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Draw Marker"
-        android:onClick="drawMarker"
-        android:focusable="true"
-        android:focusableInTouchMode="true">
-        <requestFocus />
-    </Button>
-
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent" android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true">
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Draw Marker"
+            android:onClick="drawMarker"
+            android:focusable="true"
+            android:focusableInTouchMode="true">
+            <requestFocus />
+        </Button>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="DRAW CIRCLE"
+            android:onClick="drawCircle"
+            android:id="@+id/button2"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="DRAW HEATMAP"
+            android:onClick="drawHeatmap"
+            android:id="@+id/button3"/>
+    </LinearLayout>
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"
         android:id="@+id/map"

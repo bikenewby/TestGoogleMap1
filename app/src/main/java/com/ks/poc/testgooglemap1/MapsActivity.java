@@ -1,9 +1,15 @@
 package com.ks.poc.testgooglemap1;
 
+import android.*;
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.EditText;
 import android.util.Log;
@@ -14,8 +20,15 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -72,7 +85,37 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 //           addMarker(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng),("Shop#" + i),icon);
 //        }
 //
+        mMap.getUiSettings().setRotateGesturesEnabled(false);
+        mMap.getUiSettings().setTiltGesturesEnabled(false);
+        mMap.getUiSettings().setZoomControlsEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            mMap.setMyLocationEnabled(true);
+        } else {
+            Log.d(TAG," No Authority for ACCESS_FINE_LOCATION");
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    999);
+        }
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 999: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission was granted, yay!
+                    mMap.setMyLocationEnabled(true);
+                }
+                return;
+            }
+        }
     }
 
     public void drawMarker(View view) {
@@ -98,10 +141,76 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int maxMarkers = num;
 
         mMap.clear();
-        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(resizeMapIcons("true_telco2",80,50));
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(resizeMapIcons("true_telco2",90,60));
         for(int i=1; i<=maxMarkers; i++){
             addMarker(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng),("Shop#" + i),icon);
         }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+    }
+
+    public void drawCircle(View view) {
+        // Do something in response to button
+        EditText editText = (EditText) findViewById(R.id.editText);
+        String inputText = editText.getText().toString();
+        int num;
+        try
+        {
+            num  = Integer.parseInt(inputText.trim());
+        }
+        catch (NumberFormatException nfe)
+        {
+            num = 0;
+        }
+        Log.d(TAG," Input: " + num);
+
+        // Painting Circles
+        double minLat = 5.765377;
+        double maxLat = 20.126314;
+        double minLng = 97.642374;
+        double maxLng = 105.507685;
+        int maxCircles = num;
+
+        mMap.clear();
+        for(int i=1; i<=maxCircles; i++){
+            addCircle(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng),5000);
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+    }
+
+    public void drawHeatmap(View view) {
+        // Do something in response to button
+        EditText editText = (EditText) findViewById(R.id.editText);
+        String inputText = editText.getText().toString();
+        int num;
+        try
+        {
+            num  = Integer.parseInt(inputText.trim());
+        }
+        catch (NumberFormatException nfe)
+        {
+            num = 0;
+        }
+        Log.d(TAG," Input: " + num);
+
+        // Painting Circles
+        double minLat = 5.765377;
+        double maxLat = 20.126314;
+        double minLng = 97.642374;
+        double maxLng = 105.507685;
+        int maxCircles = num;
+
+        List<LatLng> list = null;
+        list = new ArrayList<LatLng>();
+        for(int i=1; i<=maxCircles; i++){
+            list.add(new LatLng(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng)));
+        }
+        mMap.clear();
+
+        HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
+                .data(list)
+                .build();
+        TileOverlay mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
     }
 
@@ -114,7 +223,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng addMarker(double lat, double lng, String markerTitle, BitmapDescriptor icon) {
 
         LatLng loc = new LatLng(lat, lng);
-        mMap.addMarker(new MarkerOptions().position(loc).title(markerTitle).icon(icon));
+        mMap.addMarker(new MarkerOptions().position(loc).title(markerTitle).icon(icon).alpha(0.7f));
+        return loc;
+    }
+
+    private LatLng addCircle(double lat, double lng, double radiusMeter) {
+
+        LatLng loc = new LatLng(lat, lng);
+        mMap.addCircle(new CircleOptions().center(loc).radius(radiusMeter).fillColor(0x2FFF0000).strokeColor(Color.TRANSPARENT).strokeWidth(0));
         return loc;
     }
 
