@@ -18,9 +18,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Draw Marker"
+            android:text="Markers"
             android:onClick="drawMarker"
             android:focusable="true"
+            android:textSize="10sp"
             android:focusableInTouchMode="true">
             <requestFocus />
         </Button>
@@ -28,16 +29,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="DRAW CIRCLE"
+            android:text="Circles"
             android:onClick="drawCircle"
+            android:textSize="10sp"
             android:id="@+id/button2"/>
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="DRAW HEATMAP"
+            android:text="Heatmaps"
             android:onClick="drawHeatmap"
+            android:textSize="10sp"
             android:id="@+id/button3"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Overlay"
+            android:onClick="drawGroundOverlay"
+            android:textSize="10sp"
+            android:id="@+id/button4"/>
     </LinearLayout>
     <fragment xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:map="http://schemas.android.com/apk/res-auto"

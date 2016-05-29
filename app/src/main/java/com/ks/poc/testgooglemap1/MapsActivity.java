@@ -13,6 +13,7 @@ import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.widget.EditText;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -21,16 +22,19 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CircleOptions;
+import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
+import com.google.maps.android.heatmaps.WeightedLatLng;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
     private GoogleMap mMap;
     private static final String TAG = MapsActivity.class.getSimpleName();
@@ -98,8 +102,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     999);
         }
-
+        mMap.setOnMapClickListener(this);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+    }
+
+    @Override
+    public void onMapClick(LatLng point) {
+        Toast.makeText(getApplicationContext(),"Zoom Level: " + mMap.getCameraPosition().zoom, Toast.LENGTH_LONG).show();
     }
 
     @Override
@@ -199,17 +208,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         double maxLng = 105.507685;
         int maxCircles = num;
 
-        List<LatLng> list = null;
-        list = new ArrayList<LatLng>();
+        List<WeightedLatLng> list = null;
+        list = new ArrayList<WeightedLatLng>();
         for(int i=1; i<=maxCircles; i++){
-            list.add(new LatLng(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng)));
+            double wght = 0D;
+            if (i < (maxCircles/3)) wght = 1.0D;
+            if ((i >= (maxCircles/3)) && (i < ((maxCircles/3)*2))) wght = 10.0D;
+            if (i >= ((maxCircles/3)*2)) wght = 20.0D;
+            list.add(new WeightedLatLng(new LatLng(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng)),wght));
         }
         mMap.clear();
 
         HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
-                .data(list)
+                .weightedData(list)
+                .radius(50)
+                .opacity(0.4D)
                 .build();
         TileOverlay mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+    }
+
+    public void drawGroundOverlay(View view) {
+        mMap.clear();
+
+        LatLngBounds thBounds = new LatLngBounds(
+                new LatLng(5.346111, 96.884583),       // South west corner
+                new LatLng(20.749153, 105.951673));      // North east corner
+        GroundOverlayOptions thMap = new GroundOverlayOptions()
+                .image(BitmapDescriptorFactory.fromResource(R.drawable.th_coverage))
+                .transparency(0.5f) //Range: 0-1
+                .positionFromBounds(thBounds);
+
+        mMap.addGroundOverlay(thMap);
 
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
     }
