@@ -31,8 +31,14 @@ import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
 import com.google.maps.android.heatmaps.WeightedLatLng;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMapClickListener {
 
@@ -157,6 +163,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
     }
 
+    public void drawMarker2(View view) {
+        // Do something in response to button
+        EditText editText = (EditText) findViewById(R.id.editText);
+        String inputText = editText.getText().toString();
+        int num;
+        try
+        {
+            num  = Integer.parseInt(inputText.trim());
+        }
+        catch (NumberFormatException nfe)
+        {
+            num = 0;
+        }
+        Log.d(TAG," Input: " + num);
+
+        ArrayList<LatLng> list = null;
+        try {
+            list = readItems(R.raw.nw_datapoints);
+        } catch (Exception e) {
+            Toast.makeText(this, "Problem reading list of locations.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Problem reading list of locations: " + e.getMessage());
+        }
+
+        int maxMarkers = num;
+
+        mMap.clear();
+        BitmapDescriptor icon = BitmapDescriptorFactory.fromBitmap(resizeMapIcons("true_telco2",90,60));
+        for(int i=1; i<=list.size(); i++){
+            addMarker(((LatLng) list.get(i-1)).latitude,((LatLng) list.get(i-1)).longitude,("Shop#" + i),icon);
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+    }
+
     public void drawCircle(View view) {
         // Do something in response to button
         EditText editText = (EditText) findViewById(R.id.editText);
@@ -186,6 +225,39 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
     }
 
+    public void drawCircle2(View view) {
+        // Do something in response to button
+        EditText editText = (EditText) findViewById(R.id.editText);
+        String inputText = editText.getText().toString();
+        int num;
+        try
+        {
+            num  = Integer.parseInt(inputText.trim());
+        }
+        catch (NumberFormatException nfe)
+        {
+            num = 0;
+        }
+        Log.d(TAG," Input: " + num);
+
+        ArrayList<LatLng> list = null;
+        try {
+            list = readItems(R.raw.nw_datapoints);
+        } catch (Exception e) {
+            Toast.makeText(this, "Problem reading list of locations.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Problem reading list of locations: " + e.getMessage());
+        }
+
+        int maxCircles = num;
+
+        mMap.clear();
+//        for(int i=1; i<=maxCircles; i++){
+          for(int i=1; i<=list.size(); i++){
+            addCircle(((LatLng) list.get(i-1)).latitude,((LatLng) list.get(i-1)).longitude,5000);
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+    }
+
     public void drawHeatmap(View view) {
         // Do something in response to button
         EditText editText = (EditText) findViewById(R.id.editText);
@@ -201,32 +273,106 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
         Log.d(TAG," Input: " + num);
 
-        // Painting Circles
         double minLat = 5.765377;
         double maxLat = 20.126314;
         double minLng = 97.642374;
         double maxLng = 105.507685;
         int maxCircles = num;
+//------------------
+//        List<WeightedLatLng> list = null;
+//        list = new ArrayList<WeightedLatLng>();
+//        for(int i=1; i<=maxCircles; i++){
+//            double wght = 0D;
+//            if (i < (maxCircles/3)) wght = 1.0D;
+//            if ((i >= (maxCircles/3)) && (i < ((maxCircles/3)*2))) wght = 10.0D;
+//            if (i >= ((maxCircles/3)*2)) wght = 20.0D;
+//            list.add(new WeightedLatLng(new LatLng(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng)),wght));
+//        }
+// -----------------
 
-        List<WeightedLatLng> list = null;
-        list = new ArrayList<WeightedLatLng>();
-        for(int i=1; i<=maxCircles; i++){
-            double wght = 0D;
-            if (i < (maxCircles/3)) wght = 1.0D;
-            if ((i >= (maxCircles/3)) && (i < ((maxCircles/3)*2))) wght = 10.0D;
-            if (i >= ((maxCircles/3)*2)) wght = 20.0D;
-            list.add(new WeightedLatLng(new LatLng(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng)),wght));
+//        ArrayList<LatLng> list = null;
+//
+//        list = new ArrayList<LatLng>();
+//        for(int i=1; i<=maxCircles; i++){
+//            list.add(new LatLng(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng)));
+//        }
+// -----------------
+
+        ArrayList<LatLng> list = null;
+        try {
+            list = readItems(R.raw.nw_datapoints);
+            Log.d(TAG, "Read data successfully. Size: " + list.size());
+        } catch (Exception e) {
+            Toast.makeText(this, "Problem reading list of locations.", Toast.LENGTH_LONG).show();
+            Log.d(TAG, "Problem reading list of locations: " + e.getMessage());
         }
-        mMap.clear();
 
-        HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
-                .weightedData(list)
-                .radius(50)
-                .opacity(0.4D)
-                .build();
-        TileOverlay mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+        if (list == null) {
+            Toast.makeText(this, "Problem reading list of locations.", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "List of locations: " + list.size(), Toast.LENGTH_LONG).show();
 
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450),5.6f));
+            mMap.clear();
+
+            HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
+                    .data(list)
+                    .radius(50)
+                    .build();
+            TileOverlay mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450), 5.6f));
+        }
+    }
+
+    public void drawHeatmap2(View view) {
+        // Do something in response to button
+        EditText editText = (EditText) findViewById(R.id.editText);
+        String inputText = editText.getText().toString();
+        int num;
+        try
+        {
+            num  = Integer.parseInt(inputText.trim());
+        }
+        catch (NumberFormatException nfe)
+        {
+            num = 0;
+        }
+        Log.d(TAG," Input: " + num);
+
+//        double minLat = 5.765377;
+//        double maxLat = 20.126314;
+//        double minLng = 97.642374;
+//        double maxLng = 105.507685;
+
+        double minLat = 13.5119;
+        double maxLat = 13.813;
+        double minLng = 100.454;
+        double maxLng = 100.737;
+        int maxCircles = num;
+        ArrayList<LatLng> list = null;
+
+        list = new ArrayList<LatLng>();
+        for(int i=1; i<=maxCircles; i++){
+            list.add(new LatLng(doubleRandomInclusive(minLat,maxLat),doubleRandomInclusive(minLng,maxLng)));
+            Log.d(TAG,i + " LatLng: " + ((LatLng) list.get(i-1)).latitude + ", " + ((LatLng) list.get(i-1)).longitude);
+        }
+        if (list == null) {
+            Toast.makeText(this, "Problem reading list of locations.", Toast.LENGTH_LONG).show();
+        } else {
+            Toast.makeText(this, "List of locations: " + list.size(), Toast.LENGTH_LONG).show();
+
+            mMap.clear();
+
+            HeatmapTileProvider mProvider = new HeatmapTileProvider.Builder()
+                    //                .weightedData(list)
+                    .data(list)
+//                    .radius(50)
+//                    .opacity(0.4D)
+                    .build();
+            TileOverlay mOverlay = mMap.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(13.781025, 101.558450), 5.6f));
+        }
     }
 
     public void drawGroundOverlay(View view) {
@@ -261,7 +407,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private LatLng addCircle(double lat, double lng, double radiusMeter) {
 
         LatLng loc = new LatLng(lat, lng);
-        mMap.addCircle(new CircleOptions().center(loc).radius(radiusMeter).fillColor(0x2FFF0000).strokeColor(Color.TRANSPARENT).strokeWidth(0));
+        mMap.addCircle(new CircleOptions().center(loc).radius(radiusMeter).fillColor(0x2F0000FF).strokeColor(Color.TRANSPARENT).strokeWidth(0));
+        // Fill Color = Transparent + R + G + B
         return loc;
     }
 
@@ -271,5 +418,32 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             return ((1 - Math.random()) * (max - min) + min);
         }
         return (Math.random() * (max - min) + min);
+    }
+
+    private ArrayList<LatLng> readItems(int resource) throws Exception {
+
+        double minLat = 5;
+        double maxLat = 21;
+        double minLng = 96;
+        double maxLng = 106;
+
+        ArrayList<LatLng> list = new ArrayList<LatLng>();
+        InputStream inputStream = getResources().openRawResource(resource);
+        String json = new Scanner(inputStream).useDelimiter("\\A").next();
+        JSONArray array = new JSONArray(json);
+        inputStream.close();
+      for (int i = 0; i < array.length(); i++) {
+//        for (int i = 0; i < 4740; i++) {
+                JSONObject object = array.getJSONObject(i);
+                double lat = object.getDouble("lat");
+                double lng = object.getDouble("lng");
+                if ((lat >= minLat) && (lat <= maxLat) && (lng >= minLng) && (lng <= maxLng)) {
+                    list.add(new LatLng(lat, lng));
+                    //Log.d(TAG,i + " LatLng: " + ((LatLng) list.get(i)).latitude + ", " + ((LatLng) list.get(i)).longitude);
+                } else {
+                    Log.d(TAG,i + "ERROR LatLng: " + lat + ", " + lng);
+                }
+          }
+        return list;
     }
 }
